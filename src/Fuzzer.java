@@ -38,6 +38,7 @@ public class Fuzzer {
 			List<String> words = Fuzzer.getCommonWords(opts.get("commonWords"));
 
 			WebClient webClient = new WebClient();
+			System.out.println(authentication(webClient, url));
 			List<HtmlAnchor> links = Fuzzer.discoverLinks(webClient,url);
 			//TODO
 			
@@ -56,7 +57,7 @@ public class Fuzzer {
 
 	}
 	
-	private static boolean Authentication(WebClient webClient, String url){
+	private static boolean authentication(WebClient webClient, String url){
 		HtmlPage page;
 		try {
 			page = webClient.getPage(url);

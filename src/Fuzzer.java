@@ -16,6 +16,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 
 public class Fuzzer {
 
@@ -53,6 +54,93 @@ public class Fuzzer {
 			Fuzzer.usage();
 		}
 
+	}
+	
+	private static boolean Authentication(WebClient webClient, String url){
+		HtmlPage page;
+		try {
+			page = webClient.getPage(url);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+		if (url.equals("127.0.0.1/dvwa/login.php")){
+			final HtmlForm form = page.getForms().get(0);
+		    final HtmlTextInput user = form.getInputByName("username");
+		    final HtmlTextInput pass = form.getInputByName("password");
+		    
+		    user.setValueAttribute("admin");
+		    pass.setValueAttribute("password");
+		    
+		    final HtmlSubmitInput button = form.getInputByName("Login");
+		    try {
+				button.click();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+			
+		} else if(url.startsWith("127.0.0.1:8080/bodgeit/")){
+			String email = "gmh5970@rit.edu";
+			String password = "password";
+			
+			if (!url.equals("127.0.0.1:8080/bodgeit/register.jsp")){
+				try {
+					page = webClient.getPage("127.0.0.1:8080/bodgeit/register.jsp");
+				} catch (Exception e) {
+					e.printStackTrace();
+					return false;
+				}
+			}
+			
+			final HtmlForm form = page.getForms().get(0);
+		    final HtmlTextInput user = form.getInputByName("username");
+		    final HtmlTextInput pass1 = form.getInputByName("password1");
+		    final HtmlTextInput pass2 = form.getInputByName("password2");	
+		    
+		    user.setValueAttribute(email);
+		    pass1.setValueAttribute(password);
+		    pass2.setValueAttribute(password);
+		    
+		    final HtmlSubmitInput submitButton = form.getInputByName("submit");
+		    try {
+				submitButton.click();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+		    
+		    if (((HtmlPage) webClient.getCurrentWindow().getEnclosedPage())
+		    		.getBody().asText().contains("successfully registered")){// registration passes
+		    	return true;
+		    } else { // registration fails due to user already existing
+		    	try {
+					page = webClient.getPage("127.0.0.1:8080/bodgeit/login.jsp");
+				} catch (Exception e) {
+					e.printStackTrace();
+					return false;
+				}
+				final HtmlForm form2 = page.getForms().get(0);
+			    final HtmlTextInput user3 = form.getInputByName("username");
+			    final HtmlTextInput pass3 = form.getInputByName("password2");	
+			    
+			    user.setValueAttribute(email);
+			    pass3.setValueAttribute(password);
+			    
+			    final HtmlSubmitInput loginButton = form.getInputByName("Login");
+			    try {
+					loginButton.click();
+				} catch (IOException e) {
+					e.printStackTrace();
+					return false;
+				}
+		    }
+		    
+		} else {
+			return false;
+		}
+		return true;
 	}
 
 	/**
